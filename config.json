@@ -1,0 +1,16 @@
+{
+  "debug": true,
+  "server": {
+    "address": ":9090"
+  },
+  "context":{
+    "timeout":10
+  },
+  "database": {
+      "host": "localhost",
+      "port": "5432",
+      "user": "postgres",
+      "pass": "postgres",
+      "name": "postgres"
+  }
+}
