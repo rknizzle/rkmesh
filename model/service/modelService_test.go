@@ -50,7 +50,6 @@ func TestGetAll(t *testing.T) {
 
 }
 
-// LEFT OFF HERE
 func TestGetByID(t *testing.T) {
 	mockModelRepo := new(mocks.ModelRepository)
 	mockModel := domain.Model{
@@ -98,7 +97,6 @@ func TestStore(t *testing.T) {
 	t.Run("success", func(t *testing.T) {
 		tempMockModel := mockModel
 		tempMockModel.ID = 0
-		//mockModelRepo.On("GetByName", mock.Anything, mock.AnythingOfType("string")).Return(domain.Model{}, domain.ErrNotFound).Once()
 		mockModelRepo.On("Store", mock.Anything, mock.AnythingOfType("*domain.Model")).Return(nil).Once()
 
 		s := service.NewModelService(mockModelRepo, time.Second*2)
@@ -152,25 +150,3 @@ func TestDelete(t *testing.T) {
 		mockModelRepo.AssertExpectations(t)
 	})
 }
-
-/*
-func TestUpdate(t *testing.T) {
-	mockModelRepo := new(mocks.ArticleRepository)
-	mockModel := domain.Model{
-		Name:        "test.stl",
-		Volume:      1.2,
-		SurfaceArea: 3.4,
-	}
-
-	t.Run("success", func(t *testing.T) {
-		mockModelRepo.On("Update", mock.Anything, &mockModel).Once().Return(nil)
-
-		mockAuthorrepo := new(mocks.ModelRepository)
-		s := service.NewModelService(mockModelRepo, time.Second*2)
-
-		err := s.Update(context.TODO(), &mockModel)
-		assert.NoError(t, err)
-		mockArticleRepo.AssertExpectations(t)
-	})
-}
-*/
