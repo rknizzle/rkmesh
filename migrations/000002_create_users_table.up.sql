@@ -1,0 +1,7 @@
+CREATE TABLE IF NOT EXISTS users (
+  id SERIAL PRIMARY KEY,
+  email TEXT NOT NULL,
+  password TEXT NOT NULL,
+  updated_at TIMESTAMP DEFAULT NULL,
+  created_at TIMESTAMP DEFAULT NULL
+);
