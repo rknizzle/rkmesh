@@ -21,10 +21,6 @@ func init() {
 	if err != nil {
 		panic(err)
 	}
-
-	if viper.GetBool(`debug`) {
-		log.Println("Service RUN on DEBUG mode")
-	}
 }
 
 func main() {
