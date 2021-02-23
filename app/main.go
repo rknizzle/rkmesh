@@ -6,6 +6,9 @@ import (
 	"log"
 	"time"
 
+	"github.com/golang-migrate/migrate/v4"
+	"github.com/golang-migrate/migrate/v4/database/postgres"
+	_ "github.com/golang-migrate/migrate/v4/source/file"
 	"github.com/labstack/echo"
 	_ "github.com/lib/pq"
 	"github.com/spf13/viper"
@@ -37,9 +40,19 @@ func main() {
 
 	dbConn, err := sql.Open("postgres", connection)
 
+	// run database migrations
+	driver, err := postgres.WithInstance(dbConn, &postgres.Config{})
 	if err != nil {
 		log.Fatal(err)
 	}
+	mig, err := migrate.NewWithDatabaseInstance(
+		"file://./migrations",
+		"postgres", driver)
+	if err != nil {
+		log.Fatal(err)
+	}
+	mig.Steps(2)
+
 	err = dbConn.Ping()
 	if err != nil {
 		log.Fatal(err)
