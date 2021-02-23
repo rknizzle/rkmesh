@@ -1,5 +1,4 @@
 {
-  "debug": true,
   "server": {
     "address": ":9090"
   },
@@ -7,7 +6,7 @@
     "timeout":10
   },
   "database": {
-      "host": "localhost",
+      "host": "db",
       "port": "5432",
       "user": "postgres",
       "pass": "postgres",
