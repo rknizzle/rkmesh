@@ -1,0 +1,25 @@
+version: "3.8"
+services:
+  app:
+    build:
+      context: ./Dockerfile
+      # Only build the 'builder' stage of the Dockerfile for development
+      target: builder
+    expose:
+      - "9090"
+    ports:
+      - 9090:9090
+    depends_on:
+      - db
+    volumes:
+      - .:/app
+    # have to use $$ (double-dollar) so docker doesn't try to substitute a variable
+    command: reflex -r "\.go$$" -s -- sh -c "go run app/main.go"
+  db:
+    image: postgres
+    environment:
+      - POSTGRES_DB=postgres
+      - POSTGRES_USER=postgres
+      - POSTGRES_PASSWORD=postgres
+    ports:
+      - 5432:5432
