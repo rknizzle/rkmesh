@@ -11,6 +11,7 @@ services:
       - 9090:9090
     depends_on:
       - db
+      - minio
     volumes:
       - .:/app
     # have to use $$ (double-dollar) so docker doesn't try to substitute a variable
@@ -23,3 +24,16 @@ services:
       - POSTGRES_PASSWORD=postgres
     ports:
       - 5432:5432
+  # minio service is used to mock out S3 for file storage when running locally. It has an S3
+  # compatible API
+  minio:
+    image: minio/minio:latest
+    entrypoint: sh
+    # start minio with a bucket called 'rkmesh'
+    command: -c 'mkdir -p /export/rkmesh && /usr/bin/minio server /export'
+    ports:
+      - 9000:9000
+    environment:
+      # use these keys to connect to the minio instance
+      - MINIO_ROOT_USER=AKIAIOSFODNN7EXAMPLE
+      - MINIO_ROOT_PASSWORD=wJalrXUtnFEMI/K7MDENG/bPxRfiCYEXAMPLEKEY
