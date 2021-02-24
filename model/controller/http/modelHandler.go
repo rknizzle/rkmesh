@@ -75,19 +75,20 @@ func isRequestValid(m *domain.Model) (bool, error) {
 
 // Store will store the model by given request body
 func (m *ModelHandler) Store(c echo.Context) (err error) {
-	var model domain.Model
-	err = c.Bind(&model)
+	file, err := c.FormFile("file")
 	if err != nil {
-		return c.JSON(http.StatusUnprocessableEntity, err.Error())
+		// return error
 	}
 
-	var ok bool
-	if ok, err = isRequestValid(&model); !ok {
-		return c.JSON(http.StatusBadRequest, err.Error())
+	src, err := file.Open()
+	if err != nil {
+		// return error
 	}
+	defer src.Close()
 
+	model := &domain.Model{}
 	ctx := c.Request().Context()
-	err = m.Service.Store(ctx, &model)
+	err = m.Service.Store(ctx, model, src, file.Filename)
 	if err != nil {
 		return c.JSON(getStatusCode(err), ResponseError{Message: err.Error()})
 	}

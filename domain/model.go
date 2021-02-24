@@ -2,6 +2,7 @@ package domain
 
 import (
 	"context"
+	"io"
 	"time"
 )
 
@@ -19,7 +20,7 @@ type ModelService interface {
 	GetAll(ctx context.Context) ([]Model, error)
 	GetByID(ctx context.Context, id int64) (Model, error)
 	GetByName(ctx context.Context, name string) (Model, error)
-	Store(context.Context, *Model) error
+	Store(context.Context, *Model, io.Reader, string) error
 	Delete(ctx context.Context, id int64) error
 }
 

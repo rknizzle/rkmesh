@@ -8,16 +8,19 @@ import (
 	//"golang.org/x/sync/errgroup"
 
 	"github.com/rknizzle/rkmesh/domain"
+	"io"
 )
 
 type modelService struct {
 	modelRepo      domain.ModelRepository
+	s3Repo         domain.FileRepository
 	contextTimeout time.Duration
 }
 
-func NewModelService(m domain.ModelRepository, timeout time.Duration) domain.ModelService {
+func NewModelService(m domain.ModelRepository, s domain.FileRepository, timeout time.Duration) domain.ModelService {
 	return &modelService{
 		modelRepo:      m,
+		s3Repo:         s,
 		contextTimeout: timeout,
 	}
 }
@@ -57,17 +60,16 @@ func (m *modelService) GetByName(c context.Context, name string) (res domain.Mod
 	return
 }
 
-func (m *modelService) Store(c context.Context, model *domain.Model) (err error) {
+func (m *modelService) Store(c context.Context, model *domain.Model, file io.Reader, filename string) (err error) {
 	ctx, cancel := context.WithTimeout(c, m.contextTimeout)
 	defer cancel()
-	/*
-		// What is this doing / checking for?
-		existedModel, _ := m.GetByName(ctx, model.Name)
-		// if it doesnt get an empty result then you know it hasnt been created yet
-		if existedModel != (domain.Model{}) {
-			return domain.ErrConflict
-		}
-	*/
+
+	_, err = m.s3Repo.Upload(ctx, file, filename)
+	if err != nil {
+		return err
+	}
+
+	model.Name = filename
 
 	err = m.modelRepo.Store(ctx, model)
 	return
