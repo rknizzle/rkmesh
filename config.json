@@ -11,5 +11,12 @@
       "user": "postgres",
       "pass": "postgres",
       "name": "postgres"
-  }
+  },
+  "filestore": {
+      "host": "minio:9000",
+      "region": "us-east-1",
+      "ACCESS": "AKIAIOSFODNN7EXAMPLE",
+      "SECRET": "wJalrXUtnFEMI/K7MDENG/bPxRfiCYEXAMPLEKEY"
+  },
+  "model_bucket": "rkmesh"
 }
