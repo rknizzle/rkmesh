@@ -6,6 +6,9 @@ import (
 	"log"
 	"time"
 
+	"github.com/aws/aws-sdk-go/aws"
+	"github.com/aws/aws-sdk-go/aws/credentials"
+	"github.com/aws/aws-sdk-go/aws/session"
 	"github.com/golang-migrate/migrate/v4"
 	"github.com/golang-migrate/migrate/v4/database/postgres"
 	_ "github.com/golang-migrate/migrate/v4/source/file"
@@ -13,6 +16,7 @@ import (
 	_ "github.com/lib/pq"
 	"github.com/spf13/viper"
 
+	fileRepo "github.com/rknizzle/rkmesh/file/repository/s3"
 	_modelHTTPController "github.com/rknizzle/rkmesh/model/controller/http"
 	_modelRepo "github.com/rknizzle/rkmesh/model/repository/postgres"
 	_modelService "github.com/rknizzle/rkmesh/model/service"
@@ -69,7 +73,23 @@ func main() {
 	m := _modelRepo.NewPostgresModelRepository(dbConn)
 
 	timeoutContext := time.Duration(viper.GetInt("context.timeout")) * time.Second
-	s := _modelService.NewModelService(m, timeoutContext)
+
+	host := viper.GetString(`filestore.host`)
+	region := viper.GetString(`filestore.region`)
+	access := viper.GetString(`filestore.access`)
+	secret := viper.GetString(`filestore.secret`)
+	mbucket := viper.GetString(`model_bucket`)
+
+	sess, err := session.NewSession(&aws.Config{
+		Credentials:      credentials.NewStaticCredentials(access, secret, ""),
+		Region:           aws.String(region),
+		Endpoint:         aws.String(host),
+		DisableSSL:       aws.Bool(true),
+		S3ForcePathStyle: aws.Bool(true),
+	})
+
+	modelFileRepo := fileRepo.NewS3FileRepository(sess, mbucket)
+	s := _modelService.NewModelService(m, modelFileRepo, timeoutContext)
 	_modelHTTPController.NewModelHandler(e, s)
 
 	log.Fatal(e.Start(viper.GetString("server.address")))
