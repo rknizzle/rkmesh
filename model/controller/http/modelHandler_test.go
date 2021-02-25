@@ -1,7 +1,8 @@
 package http_test
 
 import (
-	"encoding/json"
+	"bytes"
+	"mime/multipart"
 	"net/http"
 	"net/http/httptest"
 	"strconv"
@@ -98,26 +99,24 @@ func TestGetByID(t *testing.T) {
 
 func TestStore(t *testing.T) {
 	mockModel := domain.Model{
-		Name:        "test.stl",
-		Volume:      1.2,
-		SurfaceArea: 3.4,
-		CreatedAt:   time.Now(),
-		UpdatedAt:   time.Now(),
+		Name:      "test.stl",
+		CreatedAt: time.Now(),
+		UpdatedAt: time.Now(),
 	}
 
 	tempMockModel := mockModel
 	tempMockModel.ID = 0
 	mockService := new(mocks.ModelService)
 
-	j, err := json.Marshal(tempMockModel)
-	assert.NoError(t, err)
-
-	mockService.On("Store", mock.Anything, mock.AnythingOfType("*domain.Model")).Return(nil)
+	mockService.On("Store", mock.Anything, mock.AnythingOfType("*domain.Model"), mock.Anything, "test.stl").Return(nil)
 
 	e := echo.New()
-	req, err := http.NewRequest(echo.POST, "/models", strings.NewReader(string(j)))
+	formData, multipartBoundary, err := mockFormData()
 	assert.NoError(t, err)
-	req.Header.Set(echo.HeaderContentType, echo.MIMEApplicationJSON)
+
+	req, err := http.NewRequest(echo.POST, "/models", formData)
+	assert.NoError(t, err)
+	req.Header.Set("Content-Type", multipartBoundary)
 
 	rec := httptest.NewRecorder()
 	c := e.NewContext(req, rec)
@@ -161,4 +160,21 @@ func TestDelete(t *testing.T) {
 
 	assert.Equal(t, http.StatusNoContent, rec.Code)
 	mockService.AssertExpectations(t)
+}
+
+func mockFormData() (*bytes.Buffer, string, error) {
+	b := new(bytes.Buffer)
+	writer := multipart.NewWriter(b)
+	part, err := writer.CreateFormFile("file", "test.stl")
+	if err != nil {
+		return &bytes.Buffer{}, "", err
+	}
+	part.Write([]byte("file data here"))
+
+	err = writer.Close()
+	if err != nil {
+		return &bytes.Buffer{}, "", err
+	}
+
+	return b, writer.FormDataContentType(), nil
 }
