@@ -20,20 +20,16 @@ func TestGetAll(t *testing.T) {
 
 	mockModels := []domain.Model{
 		domain.Model{
-			ID: 1, Name: "test1.stl", Volume: 1.1,
-			UpdatedAt: time.Now(), CreatedAt: time.Now(),
+			ID: 1, Name: "test1.stl", UpdatedAt: time.Now(), CreatedAt: time.Now(),
 		},
 		domain.Model{
-			ID: 2, Name: "test2.stl", Volume: 3.3,
-			UpdatedAt: time.Now(), CreatedAt: time.Now(),
+			ID: 2, Name: "test2.stl", UpdatedAt: time.Now(), CreatedAt: time.Now(),
 		},
 	}
 
-	rows := sqlmock.NewRows([]string{"id", "name", "volume", "surface_area", "updated_at", "created_at"}).
-		AddRow(mockModels[0].ID, mockModels[0].Name, mockModels[0].Volume,
-			mockModels[0].SurfaceArea, mockModels[0].UpdatedAt, mockModels[0].CreatedAt).
-		AddRow(mockModels[1].ID, mockModels[1].Name, mockModels[1].Volume,
-			mockModels[1].SurfaceArea, mockModels[1].UpdatedAt, mockModels[1].CreatedAt)
+	rows := sqlmock.NewRows([]string{"id", "name", "updated_at", "created_at"}).
+		AddRow(mockModels[0].ID, mockModels[0].Name, mockModels[0].UpdatedAt, mockModels[0].CreatedAt).
+		AddRow(mockModels[1].ID, mockModels[1].Name, mockModels[1].UpdatedAt, mockModels[1].CreatedAt)
 
 	query := `[SELECT * FROM models ORDER BY created_at]`
 
@@ -53,8 +49,8 @@ func TestGetByID(t *testing.T) {
 		t.Fatalf("an error '%s' was not expected when opening a stub database connection", err)
 	}
 
-	rows := sqlmock.NewRows([]string{"id", "name", "volume", "surface_area", "updated_at", "created_at"}).
-		AddRow(1, "test1.stl", 1.1, 2.2, time.Now(), time.Now())
+	rows := sqlmock.NewRows([]string{"id", "name", "updated_at", "created_at"}).
+		AddRow(1, "test1.stl", time.Now(), time.Now())
 
 	query := "[SELECT * FROM models WHERE id = $1]"
 
@@ -69,20 +65,19 @@ func TestGetByID(t *testing.T) {
 
 func TestStore(t *testing.T) {
 	m := &domain.Model{
-		Name: "test.stl", Volume: 1.1,
-		UpdatedAt: time.Now(), CreatedAt: time.Now(),
+		Name: "test.stl", UpdatedAt: time.Now(), CreatedAt: time.Now(),
 	}
 	db, mock, err := sqlmock.New()
 	if err != nil {
 		t.Fatalf("an error '%s' was not expected when opening a stub database connection", err)
 	}
 
-	query := "[INSERT INTO models (name, volume, surface_area, updated_at, created_at) VALUES ($1, $2, $3, NOW(), NOW()) RETURNING id]"
+	query := "[INSERT INTO models (name, updated_at, created_at) VALUES ($1, $2, $3, NOW(), NOW()) RETURNING id]"
 	prep := mock.ExpectPrepare(query)
 
 	rows := sqlmock.NewRows([]string{"id"}).AddRow(1)
 
-	prep.ExpectQuery().WithArgs(m.Name, m.Volume, m.SurfaceArea).WillReturnRows(rows)
+	prep.ExpectQuery().WithArgs(m.Name).WillReturnRows(rows)
 
 	p := modelPostgresRepo.NewPostgresModelRepository(db)
 
@@ -97,8 +92,8 @@ func TestGetByName(t *testing.T) {
 		t.Fatalf("an error '%s' was not expected when opening a stub database connection", err)
 	}
 
-	rows := sqlmock.NewRows([]string{"id", "name", "volume", "surface_area", "updated_at", "created_at"}).
-		AddRow(1, "test1.stl", 1.1, 2.2, time.Now(), time.Now())
+	rows := sqlmock.NewRows([]string{"id", "name", "updated_at", "created_at"}).
+		AddRow(1, "test1.stl", time.Now(), time.Now())
 
 	query := `[SELECT * FROM models WHERE name = '$1']`
 
