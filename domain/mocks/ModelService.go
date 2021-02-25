@@ -4,8 +4,10 @@ package mocks
 
 import (
 	context "context"
+	io "io"
 
 	domain "github.com/rknizzle/rkmesh/domain"
+
 	mock "github.com/stretchr/testify/mock"
 )
 
@@ -93,13 +95,13 @@ func (_m *ModelService) GetByName(ctx context.Context, name string) (domain.Mode
 	return r0, r1
 }
 
-// Store provides a mock function with given fields: _a0, _a1
-func (_m *ModelService) Store(_a0 context.Context, _a1 *domain.Model) error {
-	ret := _m.Called(_a0, _a1)
+// Store provides a mock function with given fields: _a0, _a1, _a2, _a3
+func (_m *ModelService) Store(_a0 context.Context, _a1 *domain.Model, _a2 io.Reader, _a3 string) error {
+	ret := _m.Called(_a0, _a1, _a2, _a3)
 
 	var r0 error
-	if rf, ok := ret.Get(0).(func(context.Context, *domain.Model) error); ok {
-		r0 = rf(_a0, _a1)
+	if rf, ok := ret.Get(0).(func(context.Context, *domain.Model, io.Reader, string) error); ok {
+		r0 = rf(_a0, _a1, _a2, _a3)
 	} else {
 		r0 = ret.Error(0)
 	}
