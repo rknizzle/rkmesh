@@ -1,4 +1,4 @@
-package postgres_test
+package model_test
 
 import (
 	"context"
@@ -9,10 +9,11 @@ import (
 	sqlmock "gopkg.in/DATA-DOG/go-sqlmock.v1"
 
 	"github.com/rknizzle/rkmesh/domain"
-	modelPostgresRepo "github.com/rknizzle/rkmesh/model/repository/postgres"
+
+	"github.com/rknizzle/rkmesh/model"
 )
 
-func TestGetAll(t *testing.T) {
+func TestPGGetAll(t *testing.T) {
 	db, mock, err := sqlmock.New()
 	if err != nil {
 		t.Fatalf("an error '%s' was not expected when opening a stub database connection", err)
@@ -35,7 +36,7 @@ func TestGetAll(t *testing.T) {
 
 	mock.ExpectQuery(query).WillReturnRows(rows)
 
-	m := modelPostgresRepo.NewPostgresModelRepository(db)
+	m := model.NewPostgresModelRepository(db)
 
 	list, err := m.GetAll(context.TODO())
 
@@ -43,7 +44,7 @@ func TestGetAll(t *testing.T) {
 	assert.Len(t, list, 2)
 }
 
-func TestGetByID(t *testing.T) {
+func TestPGGetByID(t *testing.T) {
 	db, mock, err := sqlmock.New()
 	if err != nil {
 		t.Fatalf("an error '%s' was not expected when opening a stub database connection", err)
@@ -55,7 +56,7 @@ func TestGetByID(t *testing.T) {
 	query := "[SELECT * FROM models WHERE id = $1]"
 
 	mock.ExpectQuery(query).WillReturnRows(rows)
-	a := modelPostgresRepo.NewPostgresModelRepository(db)
+	a := model.NewPostgresModelRepository(db)
 
 	num := int64(5)
 	model, err := a.GetByID(context.TODO(), num)
@@ -63,7 +64,7 @@ func TestGetByID(t *testing.T) {
 	assert.NotNil(t, model)
 }
 
-func TestStore(t *testing.T) {
+func TestPGStore(t *testing.T) {
 	m := &domain.Model{
 		Name: "test.stl", UpdatedAt: time.Now(), CreatedAt: time.Now(),
 	}
@@ -79,14 +80,14 @@ func TestStore(t *testing.T) {
 
 	prep.ExpectQuery().WithArgs(m.Name).WillReturnRows(rows)
 
-	p := modelPostgresRepo.NewPostgresModelRepository(db)
+	p := model.NewPostgresModelRepository(db)
 
 	err = p.Store(context.TODO(), m)
 	assert.NoError(t, err)
 	assert.Equal(t, int64(1), m.ID)
 }
 
-func TestGetByName(t *testing.T) {
+func TestPGGetByName(t *testing.T) {
 	db, mock, err := sqlmock.New()
 	if err != nil {
 		t.Fatalf("an error '%s' was not expected when opening a stub database connection", err)
@@ -98,7 +99,7 @@ func TestGetByName(t *testing.T) {
 	query := `[SELECT * FROM models WHERE name = '$1']`
 
 	mock.ExpectQuery(query).WillReturnRows(rows)
-	p := modelPostgresRepo.NewPostgresModelRepository(db)
+	p := model.NewPostgresModelRepository(db)
 
 	name := "test.stl"
 	model, err := p.GetByName(context.TODO(), name)
@@ -106,7 +107,7 @@ func TestGetByName(t *testing.T) {
 	assert.NotNil(t, model)
 }
 
-func TestDelete(t *testing.T) {
+func TestPGDelete(t *testing.T) {
 	db, mock, err := sqlmock.New()
 	if err != nil {
 		t.Fatalf("an error '%s' was not expected when opening a stub database connection", err)
@@ -117,7 +118,7 @@ func TestDelete(t *testing.T) {
 	prep := mock.ExpectPrepare(query)
 	prep.ExpectExec().WithArgs(12).WillReturnResult(sqlmock.NewResult(12, 1))
 
-	p := modelPostgresRepo.NewPostgresModelRepository(db)
+	p := model.NewPostgresModelRepository(db)
 
 	num := int64(12)
 	err = p.Delete(context.TODO(), num)

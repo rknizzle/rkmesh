@@ -1,4 +1,4 @@
-package http_test
+package model_test
 
 import (
 	"bytes"
@@ -18,10 +18,10 @@ import (
 
 	"github.com/rknizzle/rkmesh/domain"
 	"github.com/rknizzle/rkmesh/domain/mocks"
-	modelHTTP "github.com/rknizzle/rkmesh/model/controller/http"
+	"github.com/rknizzle/rkmesh/model"
 )
 
-func TestGetAll(t *testing.T) {
+func TestHandlerGetAll(t *testing.T) {
 	var mockModel domain.Model
 	err := faker.FakeData(&mockModel)
 	assert.NoError(t, err)
@@ -36,7 +36,7 @@ func TestGetAll(t *testing.T) {
 
 	rec := httptest.NewRecorder()
 	c := e.NewContext(req, rec)
-	handler := modelHTTP.ModelHandler{
+	handler := model.ModelHandler{
 		Service: mockService,
 	}
 	err = handler.GetAll(c)
@@ -47,7 +47,7 @@ func TestGetAll(t *testing.T) {
 	mockService.AssertExpectations(t)
 }
 
-func TestGetAllError(t *testing.T) {
+func TestHandlerGetAllError(t *testing.T) {
 	mockService := new(mocks.ModelService)
 	mockService.On("GetAll", mock.Anything).Return(nil, domain.ErrInternalServerError)
 
@@ -57,7 +57,7 @@ func TestGetAllError(t *testing.T) {
 
 	rec := httptest.NewRecorder()
 	c := e.NewContext(req, rec)
-	handler := modelHTTP.ModelHandler{
+	handler := model.ModelHandler{
 		Service: mockService,
 	}
 	err = handler.GetAll(c)
@@ -67,7 +67,7 @@ func TestGetAllError(t *testing.T) {
 	mockService.AssertExpectations(t)
 }
 
-func TestGetByID(t *testing.T) {
+func TestHandlerGetByID(t *testing.T) {
 	var mockModel domain.Model
 	err := faker.FakeData(&mockModel)
 	assert.NoError(t, err)
@@ -87,7 +87,7 @@ func TestGetByID(t *testing.T) {
 	c.SetPath("model/:id")
 	c.SetParamNames("id")
 	c.SetParamValues(strconv.Itoa(num))
-	handler := modelHTTP.ModelHandler{
+	handler := model.ModelHandler{
 		Service: mockService,
 	}
 	err = handler.GetByID(c)
@@ -97,7 +97,7 @@ func TestGetByID(t *testing.T) {
 	mockService.AssertExpectations(t)
 }
 
-func TestStore(t *testing.T) {
+func TestHandlerStore(t *testing.T) {
 	mockModel := domain.Model{
 		Name:      "test.stl",
 		CreatedAt: time.Now(),
@@ -122,7 +122,7 @@ func TestStore(t *testing.T) {
 	c := e.NewContext(req, rec)
 	c.SetPath("/models")
 
-	handler := modelHTTP.ModelHandler{
+	handler := model.ModelHandler{
 		Service: mockService,
 	}
 	err = handler.Store(c)
@@ -132,7 +132,7 @@ func TestStore(t *testing.T) {
 	mockService.AssertExpectations(t)
 }
 
-func TestDelete(t *testing.T) {
+func TestHandlerDelete(t *testing.T) {
 	var mockModel domain.Model
 	err := faker.FakeData(&mockModel)
 	assert.NoError(t, err)
@@ -152,7 +152,7 @@ func TestDelete(t *testing.T) {
 	c.SetPath("models/:id")
 	c.SetParamNames("id")
 	c.SetParamValues(strconv.Itoa(num))
-	handler := modelHTTP.ModelHandler{
+	handler := model.ModelHandler{
 		Service: mockService,
 	}
 	err = handler.Delete(c)

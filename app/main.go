@@ -18,10 +18,8 @@ import (
 	"github.com/spf13/viper"
 
 	"github.com/rknizzle/rkmesh/domain"
-	fileRepo "github.com/rknizzle/rkmesh/file/repository/s3"
-	_modelHTTPController "github.com/rknizzle/rkmesh/model/controller/http"
-	_modelRepo "github.com/rknizzle/rkmesh/model/repository/postgres"
-	_modelService "github.com/rknizzle/rkmesh/model/service"
+	"github.com/rknizzle/rkmesh/filestore"
+	"github.com/rknizzle/rkmesh/model"
 )
 
 func init() {
@@ -57,7 +55,7 @@ func main() {
 	}()
 
 	e := echo.New()
-	m := _modelRepo.NewPostgresModelRepository(dbConn)
+	m := model.NewPostgresModelRepository(dbConn)
 
 	modelFileStorage, err := connectToFileStorage(
 		viper.GetString(`filestore.host`),
@@ -72,8 +70,8 @@ func main() {
 	}
 
 	timeoutContext := time.Duration(viper.GetInt("context.timeout")) * time.Second
-	s := _modelService.NewModelService(m, modelFileStorage, timeoutContext)
-	_modelHTTPController.NewModelHandler(e, s)
+	s := model.NewModelService(m, modelFileStorage, timeoutContext)
+	model.NewModelHandler(e, s)
 
 	log.Fatal(e.Start(viper.GetString("server.address")))
 }
@@ -112,7 +110,7 @@ func runDatabaseMigrations(dbConn *sql.DB) error {
 	return nil
 }
 
-func connectToFileStorage(host, region, access, secret, bucket string) (domain.FileRepository, error) {
+func connectToFileStorage(host, region, access, secret, bucket string) (domain.Filestore, error) {
 	sess, err := session.NewSession(&aws.Config{
 		Credentials:      credentials.NewStaticCredentials(access, secret, ""),
 		Region:           aws.String(region),
@@ -124,6 +122,6 @@ func connectToFileStorage(host, region, access, secret, bucket string) (domain.F
 		return nil, err
 	}
 
-	fileStorage := fileRepo.NewS3FileRepository(sess, bucket)
+	fileStorage := filestore.NewS3Filestore(sess, bucket)
 	return fileStorage, nil
 }

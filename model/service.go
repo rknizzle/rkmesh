@@ -1,4 +1,4 @@
-package service
+package model
 
 import (
 	"context"
@@ -7,20 +7,21 @@ import (
 	//"github.com/sirupsen/logrus"
 	//"golang.org/x/sync/errgroup"
 
-	"github.com/rknizzle/rkmesh/domain"
 	"io"
+
+	"github.com/rknizzle/rkmesh/domain"
 )
 
 type modelService struct {
 	modelRepo      domain.ModelRepository
-	s3Repo         domain.FileRepository
+	filestore      domain.Filestore
 	contextTimeout time.Duration
 }
 
-func NewModelService(m domain.ModelRepository, s domain.FileRepository, timeout time.Duration) domain.ModelService {
+func NewModelService(m domain.ModelRepository, s domain.Filestore, timeout time.Duration) domain.ModelService {
 	return &modelService{
 		modelRepo:      m,
-		s3Repo:         s,
+		filestore:      s,
 		contextTimeout: timeout,
 	}
 }
@@ -64,7 +65,7 @@ func (m *modelService) Store(c context.Context, model *domain.Model, file io.Rea
 	ctx, cancel := context.WithTimeout(c, m.contextTimeout)
 	defer cancel()
 
-	_, err = m.s3Repo.Upload(ctx, file, filename)
+	_, err = m.filestore.Upload(ctx, file, filename)
 	if err != nil {
 		return err
 	}

@@ -1,25 +1,26 @@
-package s3
+package filestore
 
 import (
 	"context"
+	"io"
+
 	"github.com/aws/aws-sdk-go/aws"
 	"github.com/aws/aws-sdk-go/aws/session"
 	"github.com/aws/aws-sdk-go/service/s3/s3manager"
 	"github.com/rknizzle/rkmesh/domain"
-	"github.com/satori/go.uuid"
-	"io"
+	uuid "github.com/satori/go.uuid"
 )
 
-type s3FileRepository struct {
+type s3Filestore struct {
 	Session *session.Session
 	Bucket  string
 }
 
-func NewS3FileRepository(session *session.Session, bucket string) domain.FileRepository {
-	return &s3FileRepository{session, bucket}
+func NewS3Filestore(session *session.Session, bucket string) domain.Filestore {
+	return &s3Filestore{session, bucket}
 }
 
-func (s *s3FileRepository) Upload(ctx context.Context, file io.Reader, filename string) (string, error) {
+func (s *s3Filestore) Upload(ctx context.Context, file io.Reader, filename string) (string, error) {
 	uploader := s3manager.NewUploader(s.Session)
 
 	u := uuid.NewV4()
