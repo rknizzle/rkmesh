@@ -1,4 +1,4 @@
-package postgres_test
+package auth_test
 
 import (
 	"context"
@@ -8,8 +8,8 @@ import (
 	"github.com/stretchr/testify/assert"
 	sqlmock "gopkg.in/DATA-DOG/go-sqlmock.v1"
 
+	"github.com/rknizzle/rkmesh/auth"
 	"github.com/rknizzle/rkmesh/domain"
-	userPostgresRepo "github.com/rknizzle/rkmesh/user/repository/postgres"
 )
 
 func TestGetByEmail(t *testing.T) {
@@ -24,7 +24,7 @@ func TestGetByEmail(t *testing.T) {
 	query := "[SELECT * FROM users WHERE id = $1]"
 
 	mock.ExpectQuery(query).WillReturnRows(rows)
-	a := userPostgresRepo.NewPostgresUserRepository(db)
+	a := auth.NewPostgresUserRepository(db)
 
 	user, err := a.GetByEmail(context.TODO(), "ryan@example.com")
 	assert.NoError(t, err)
@@ -50,7 +50,7 @@ func TestCreate(t *testing.T) {
 
 	prep.ExpectQuery().WithArgs(u.Email, u.Password).WillReturnRows(rows)
 
-	p := userPostgresRepo.NewPostgresUserRepository(db)
+	p := auth.NewPostgresUserRepository(db)
 
 	err = p.Create(context.TODO(), u)
 	assert.NoError(t, err)

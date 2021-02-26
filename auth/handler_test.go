@@ -1,4 +1,4 @@
-package http_test
+package auth_test
 
 import (
 	"encoding/json"
@@ -12,7 +12,7 @@ import (
 	"github.com/stretchr/testify/mock"
 	"github.com/stretchr/testify/require"
 
-	authHTTP "github.com/rknizzle/rkmesh/auth/controller/http"
+	"github.com/rknizzle/rkmesh/auth"
 	"github.com/rknizzle/rkmesh/domain/mocks"
 )
 
@@ -21,7 +21,7 @@ func TestLogin(t *testing.T) {
 
 	mockService.On("Login", mock.Anything, "ryan@example.com", "password").Return("token goes here", nil)
 
-	tempLoginInput := &authHTTP.UserInput{Email: "ryan@example.com", Password: "password"}
+	tempLoginInput := &auth.UserInput{Email: "ryan@example.com", Password: "password"}
 	j, err := json.Marshal(tempLoginInput)
 	assert.NoError(t, err)
 
@@ -35,7 +35,7 @@ func TestLogin(t *testing.T) {
 	c := e.NewContext(req, rec)
 	c.SetPath("auth/login")
 
-	handler := authHTTP.AuthHandler{
+	handler := auth.AuthHandler{
 		Service: mockService,
 	}
 	err = handler.Login(c)
@@ -50,7 +50,7 @@ func TestSignUp(t *testing.T) {
 
 	mockService.On("SignUp", mock.Anything, "ryan@example.com", "password").Return(nil)
 
-	tempLoginInput := &authHTTP.UserInput{Email: "ryan@example.com", Password: "password"}
+	tempLoginInput := &auth.UserInput{Email: "ryan@example.com", Password: "password"}
 	j, err := json.Marshal(tempLoginInput)
 	assert.NoError(t, err)
 
@@ -63,7 +63,7 @@ func TestSignUp(t *testing.T) {
 	c := e.NewContext(req, rec)
 	c.SetPath("/auth/sign-up")
 
-	handler := authHTTP.AuthHandler{
+	handler := auth.AuthHandler{
 		Service: mockService,
 	}
 	err = handler.SignUp(c)
