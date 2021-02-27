@@ -76,7 +76,7 @@ func (p *postgresModelRepository) GetByID(ctx context.Context, id int64) (res do
 	if len(list) > 0 {
 		res = list[0]
 	} else {
-		return res, domain.ErrNotFound
+		return domain.Model{}, domain.ErrNotFound
 	}
 
 	return

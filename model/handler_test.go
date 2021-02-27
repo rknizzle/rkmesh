@@ -8,7 +8,6 @@ import (
 	"strconv"
 	"strings"
 	"testing"
-	"time"
 
 	"github.com/bxcodec/faker"
 	"github.com/labstack/echo"
@@ -28,10 +27,11 @@ func TestHandlerGetAll(t *testing.T) {
 	mockService := new(mocks.ModelService)
 	mockListModel := make([]domain.Model, 0)
 	mockListModel = append(mockListModel, mockModel)
+
 	mockService.On("GetAll", mock.Anything).Return(mockListModel, nil)
 
 	e := echo.New()
-	req, err := http.NewRequest(echo.GET, "/models", strings.NewReader(""))
+	req, err := http.NewRequest(echo.GET, "/models", nil)
 	assert.NoError(t, err)
 
 	rec := httptest.NewRecorder()
@@ -39,10 +39,10 @@ func TestHandlerGetAll(t *testing.T) {
 	handler := model.ModelHandler{
 		Service: mockService,
 	}
+
 	err = handler.GetAll(c)
 	require.NoError(t, err)
 
-	// TODO: can I verify that it returns an array of Models?
 	assert.Equal(t, http.StatusOK, rec.Code)
 	mockService.AssertExpectations(t)
 }
@@ -52,7 +52,7 @@ func TestHandlerGetAllError(t *testing.T) {
 	mockService.On("GetAll", mock.Anything).Return(nil, domain.ErrInternalServerError)
 
 	e := echo.New()
-	req, err := http.NewRequest(echo.GET, "/models", strings.NewReader(""))
+	req, err := http.NewRequest(echo.GET, "/models", nil)
 	assert.NoError(t, err)
 
 	rec := httptest.NewRecorder()
@@ -79,7 +79,7 @@ func TestHandlerGetByID(t *testing.T) {
 	mockService.On("GetByID", mock.Anything, int64(num)).Return(mockModel, nil)
 
 	e := echo.New()
-	req, err := http.NewRequest(echo.GET, "/models/"+strconv.Itoa(num), strings.NewReader(""))
+	req, err := http.NewRequest(echo.GET, "/models/"+strconv.Itoa(num), nil)
 	assert.NoError(t, err)
 
 	rec := httptest.NewRecorder()
@@ -90,6 +90,7 @@ func TestHandlerGetByID(t *testing.T) {
 	handler := model.ModelHandler{
 		Service: mockService,
 	}
+
 	err = handler.GetByID(c)
 	require.NoError(t, err)
 
@@ -98,14 +99,10 @@ func TestHandlerGetByID(t *testing.T) {
 }
 
 func TestHandlerStore(t *testing.T) {
-	mockModel := domain.Model{
-		Name:      "test.stl",
-		CreatedAt: time.Now(),
-		UpdatedAt: time.Now(),
-	}
+	var mockModel domain.Model
+	err := faker.FakeData(&mockModel)
+	assert.NoError(t, err)
 
-	tempMockModel := mockModel
-	tempMockModel.ID = 0
 	mockService := new(mocks.ModelService)
 
 	mockService.On("Store", mock.Anything, mock.AnythingOfType("*domain.Model"), mock.Anything, "test.stl").Return(nil)

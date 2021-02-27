@@ -11,17 +11,15 @@ import (
 	"github.com/rknizzle/rkmesh/domain"
 )
 
-// ResponseError represent the reseponse error struct
-type ResponseError struct {
+type responseError struct {
 	Message string `json:"message"`
 }
 
-// ModelHandler  represent the httphandler for model
 type ModelHandler struct {
 	Service domain.ModelService
 }
 
-// NewModelHandler will initialize the models/ resources endpoint
+// NewModelHandler will initialize the /models resources endpoints
 func NewModelHandler(e *echo.Echo, s domain.ModelService) {
 	handler := &ModelHandler{
 		Service: s,
@@ -33,35 +31,33 @@ func NewModelHandler(e *echo.Echo, s domain.ModelService) {
 	e.DELETE("/models/:id", handler.Delete)
 }
 
-// FetchModel will fetch the model based on given params
 func (m *ModelHandler) GetAll(c echo.Context) error {
 	ctx := c.Request().Context()
 
 	mList, err := m.Service.GetAll(ctx)
 	if err != nil {
-		return c.JSON(getStatusCode(err), ResponseError{Message: err.Error()})
+		return c.JSON(getStatusCode(err), responseError{Message: err.Error()})
 	}
 
 	//c.Response().Header().Set(`X-Cursor`, nextCursor)
 	return c.JSON(http.StatusOK, mList)
 }
 
-// GetByID will get model by given id
 func (m *ModelHandler) GetByID(c echo.Context) error {
-	idP, err := strconv.Atoi(c.Param("id"))
+	// convert the url param 'id' from a string to int64
+	id, err := strconv.ParseInt(c.Param("id"), 10, 64)
 	if err != nil {
 		return c.JSON(http.StatusNotFound, domain.ErrNotFound.Error())
 	}
 
-	id := int64(idP)
 	ctx := c.Request().Context()
 
-	art, err := m.Service.GetByID(ctx, id)
+	model, err := m.Service.GetByID(ctx, id)
 	if err != nil {
-		return c.JSON(getStatusCode(err), ResponseError{Message: err.Error()})
+		return c.JSON(getStatusCode(err), responseError{Message: err.Error()})
 	}
 
-	return c.JSON(http.StatusOK, art)
+	return c.JSON(http.StatusOK, model)
 }
 
 func isRequestValid(m *domain.Model) (bool, error) {
@@ -77,12 +73,12 @@ func isRequestValid(m *domain.Model) (bool, error) {
 func (m *ModelHandler) Store(c echo.Context) (err error) {
 	file, err := c.FormFile("file")
 	if err != nil {
-		// return error
+		return c.JSON(http.StatusBadRequest, responseError{Message: err.Error()})
 	}
 
 	src, err := file.Open()
 	if err != nil {
-		// return error
+		return c.JSON(getStatusCode(err), responseError{Message: err.Error()})
 	}
 	defer src.Close()
 
@@ -90,7 +86,7 @@ func (m *ModelHandler) Store(c echo.Context) (err error) {
 	ctx := c.Request().Context()
 	err = m.Service.Store(ctx, model, src, file.Filename)
 	if err != nil {
-		return c.JSON(getStatusCode(err), ResponseError{Message: err.Error()})
+		return c.JSON(getStatusCode(err), responseError{Message: err.Error()})
 	}
 
 	return c.JSON(http.StatusCreated, model)
@@ -108,7 +104,7 @@ func (m *ModelHandler) Delete(c echo.Context) error {
 
 	err = m.Service.Delete(ctx, id)
 	if err != nil {
-		return c.JSON(getStatusCode(err), ResponseError{Message: err.Error()})
+		return c.JSON(getStatusCode(err), responseError{Message: err.Error()})
 	}
 
 	return c.NoContent(http.StatusNoContent)

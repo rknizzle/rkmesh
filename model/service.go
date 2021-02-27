@@ -2,12 +2,8 @@ package model
 
 import (
 	"context"
-	"time"
-
-	//"github.com/sirupsen/logrus"
-	//"golang.org/x/sync/errgroup"
-
 	"io"
+	"time"
 
 	"github.com/rknizzle/rkmesh/domain"
 )
@@ -81,7 +77,7 @@ func (m *modelService) Delete(c context.Context, id int64) (err error) {
 	defer cancel()
 	existedModel, err := m.modelRepo.GetByID(ctx, id)
 	if err != nil {
-		return
+		return err
 	}
 	if existedModel == (domain.Model{}) {
 		return domain.ErrNotFound
