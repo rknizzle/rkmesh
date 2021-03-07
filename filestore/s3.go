@@ -12,21 +12,20 @@ import (
 )
 
 type s3Filestore struct {
-	Session *session.Session
-	Bucket  string
+	bucket   string
+	uploader *s3manager.Uploader
 }
 
 func NewS3Filestore(session *session.Session, bucket string) domain.Filestore {
-	return &s3Filestore{session, bucket}
+	uploader := s3manager.NewUploader(session)
+	return &s3Filestore{bucket, uploader}
 }
 
 func (s *s3Filestore) Upload(ctx context.Context, file io.Reader, filename string) (string, error) {
-	uploader := s3manager.NewUploader(s.Session)
-
 	u := uuid.NewV4()
 
-	up, err := uploader.Upload(&s3manager.UploadInput{
-		Bucket: aws.String(s.Bucket),
+	up, err := s.uploader.UploadWithContext(ctx, &s3manager.UploadInput{
+		Bucket: aws.String(s.bucket),
 		ACL:    aws.String("public-read"),
 		Key:    aws.String(filename + "-" + u.String()),
 		Body:   file,
