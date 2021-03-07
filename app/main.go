@@ -17,6 +17,7 @@ import (
 	_ "github.com/lib/pq"
 	"github.com/spf13/viper"
 
+	"github.com/rknizzle/rkmesh/auth"
 	"github.com/rknizzle/rkmesh/domain"
 	"github.com/rknizzle/rkmesh/filestore"
 	"github.com/rknizzle/rkmesh/model"
@@ -72,6 +73,11 @@ func main() {
 	timeoutContext := time.Duration(viper.GetInt("context.timeout")) * time.Second
 	s := model.NewModelService(m, modelFileStorage, timeoutContext)
 	model.NewModelHandler(e, s)
+
+	// auth handling
+	userRepo := auth.NewPostgresUserRepository(dbConn)
+	authService := auth.NewAuthService(userRepo, timeoutContext)
+	auth.NewAuthHandler(e, authService)
 
 	log.Fatal(e.Start(viper.GetString("server.address")))
 }
