@@ -15,7 +15,7 @@ import (
 	"github.com/golang-migrate/migrate/v4/database/postgres"
 	_ "github.com/golang-migrate/migrate/v4/source/file"
 	"github.com/joho/godotenv"
-	"github.com/labstack/echo"
+	"github.com/labstack/echo/v4"
 	_ "github.com/lib/pq"
 
 	"github.com/rknizzle/rkmesh/auth"
