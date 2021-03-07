@@ -2,9 +2,13 @@ package auth
 
 import (
 	"context"
+	"errors"
+	"os"
 	"time"
 
+	"github.com/dgrijalva/jwt-go"
 	"github.com/rknizzle/rkmesh/domain"
+	"golang.org/x/crypto/bcrypt"
 )
 
 type authService struct {
@@ -23,16 +27,22 @@ func (a *authService) Login(c context.Context, email string, password string) (t
 	ctx, cancel := context.WithTimeout(c, a.contextTimeout)
 	defer cancel()
 
-	_, err = a.userRepo.GetByEmail(ctx, email)
+	user, err := a.userRepo.GetByEmail(ctx, email)
 	if err != nil {
 		return "", err
 	}
 
-	// do a hash verify on user.password and check if it matches the one in the database
-	//hash.verify(password, user.password)
+	// Compare the stored hashed password, with the hashed version of the password that was received
+	err = bcrypt.CompareHashAndPassword([]byte(user.Password), []byte(password))
+	if err != nil {
+		return "", errors.New("Unauthorized")
+	}
 
-	// generate a token if it is valid and return the token
-	return "xxx", nil
+	token, err = CreateToken(user.ID)
+	if err != nil {
+		return "", err
+	}
+	return token, nil
 }
 
 func (a *authService) SignUp(c context.Context, email string, password string) (err error) {
@@ -40,12 +50,35 @@ func (a *authService) SignUp(c context.Context, email string, password string) (
 	defer cancel()
 
 	// hash the password before placing the user into the database
-	// hashPassword()
+	hashedPassword, err := bcrypt.GenerateFromPassword([]byte(password), 8)
+	if err != nil {
+		return err
+	}
 
-	err = a.userRepo.Create(ctx, &domain.User{Email: email, Password: password})
+	err = a.userRepo.Create(ctx, &domain.User{Email: email, Password: string(hashedPassword)})
 	if err != nil {
 		return err
 	}
 
 	return
+}
+
+func CreateToken(userid int64) (string, error) {
+	var err error
+
+	// TODO -- start using env insteaf of viper in the app and then remove this
+	os.Setenv("ACCESS_SECRET", "jdnfksdmfksd")
+
+	atClaims := jwt.MapClaims{}
+	atClaims["authorized"] = true
+	atClaims["user_id"] = userid
+	atClaims["exp"] = time.Now().Add(time.Hour * 24).Unix()
+
+	at := jwt.NewWithClaims(jwt.SigningMethodHS256, atClaims)
+
+	token, err := at.SignedString([]byte(os.Getenv("ACCESS_SECRET")))
+	if err != nil {
+		return "", err
+	}
+	return token, nil
 }
