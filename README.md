@@ -55,3 +55,6 @@ mockery --all
 ```
 
 TODO: generate mocks of a new package
+
+# Connect to local database with psql
+`psql postgresql://postgres:postgres@localhost:5432/postgres`
