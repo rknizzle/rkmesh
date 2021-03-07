@@ -16,6 +16,7 @@ import (
 	_ "github.com/golang-migrate/migrate/v4/source/file"
 	"github.com/joho/godotenv"
 	"github.com/labstack/echo/v4"
+	"github.com/labstack/echo/v4/middleware"
 	_ "github.com/lib/pq"
 
 	"github.com/rknizzle/rkmesh/auth"
@@ -56,6 +57,20 @@ func main() {
 	}()
 
 	e := echo.New()
+	timeoutInt, err := strconv.Atoi(os.Getenv("GENERIC_TIMEOUT"))
+	if err != nil {
+		fmt.Printf("Failed to parse timeout value: %s\n", err.Error())
+		os.Exit(1)
+
+	}
+	timeoutContext := time.Duration(timeoutInt) * time.Second
+
+	// auth handling
+	userRepo := auth.NewPostgresUserRepository(dbConn)
+	authService := auth.NewAuthService(userRepo, timeoutContext)
+	auth.NewAuthHandler(e, authService)
+
+	// models handling
 	m := model.NewPostgresModelRepository(dbConn)
 
 	modelFileStorage, err := connectToFileStorage(
@@ -70,20 +85,12 @@ func main() {
 		os.Exit(1)
 	}
 
-	timeoutSeconds, err := strconv.Atoi(os.Getenv("GENERIC_TIMEOUT"))
-	if err != nil {
-		fmt.Printf("Failed to parse timeout value: %s\n", err.Error())
-		os.Exit(1)
-
-	}
-	timeoutContext := time.Duration(timeoutSeconds) * time.Second
 	s := model.NewModelService(m, modelFileStorage, timeoutContext)
-	model.NewModelHandler(e, s)
 
-	// auth handling
-	userRepo := auth.NewPostgresUserRepository(dbConn)
-	authService := auth.NewAuthService(userRepo, timeoutContext)
-	auth.NewAuthHandler(e, authService)
+	// Require a valid JWT token to access any /models routes
+	modelRoutes := e.Group("/models")
+	modelRoutes.Use(middleware.JWT([]byte(os.Getenv("JWT_SECRET_KEY"))))
+	model.NewModelHandler(modelRoutes, s)
 
 	log.Fatal(e.Start(":" + os.Getenv("PORT")))
 }
