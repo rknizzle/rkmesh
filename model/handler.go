@@ -20,15 +20,16 @@ type ModelHandler struct {
 }
 
 // NewModelHandler will initialize the /models resources endpoints
-func NewModelHandler(e *echo.Echo, s domain.ModelService) {
+func NewModelHandler(e *echo.Group, s domain.ModelService) {
 	handler := &ModelHandler{
 		Service: s,
 	}
 
-	e.GET("/models", handler.GetAll)
-	e.POST("/models", handler.Store)
-	e.GET("/models/:id", handler.GetByID)
-	e.DELETE("/models/:id", handler.Delete)
+	// /models...
+	e.GET("", handler.GetAll)
+	e.POST("", handler.Store)
+	e.GET("/:id", handler.GetByID)
+	e.DELETE("/:id", handler.Delete)
 }
 
 func (m *ModelHandler) GetAll(c echo.Context) error {
