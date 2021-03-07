@@ -64,11 +64,6 @@ func (a *authService) SignUp(c context.Context, email string, password string) (
 }
 
 func CreateToken(userid int64) (string, error) {
-	var err error
-
-	// TODO -- start using env insteaf of viper in the app and then remove this
-	os.Setenv("ACCESS_SECRET", "jdnfksdmfksd")
-
 	atClaims := jwt.MapClaims{}
 	atClaims["authorized"] = true
 	atClaims["user_id"] = userid
@@ -76,7 +71,7 @@ func CreateToken(userid int64) (string, error) {
 
 	at := jwt.NewWithClaims(jwt.SigningMethodHS256, atClaims)
 
-	token, err := at.SignedString([]byte(os.Getenv("ACCESS_SECRET")))
+	token, err := at.SignedString([]byte(os.Getenv("JWT_SECRET_KEY")))
 	if err != nil {
 		return "", err
 	}

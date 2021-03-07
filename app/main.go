@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"log"
 	"os"
+	"strconv"
 	"time"
 
 	"github.com/aws/aws-sdk-go/aws"
@@ -13,9 +14,9 @@ import (
 	"github.com/golang-migrate/migrate/v4"
 	"github.com/golang-migrate/migrate/v4/database/postgres"
 	_ "github.com/golang-migrate/migrate/v4/source/file"
+	"github.com/joho/godotenv"
 	"github.com/labstack/echo"
 	_ "github.com/lib/pq"
-	"github.com/spf13/viper"
 
 	"github.com/rknizzle/rkmesh/auth"
 	"github.com/rknizzle/rkmesh/domain"
@@ -24,8 +25,7 @@ import (
 )
 
 func init() {
-	viper.SetConfigFile(`config.json`)
-	err := viper.ReadInConfig()
+	err := godotenv.Load()
 	if err != nil {
 		fmt.Printf("Failed to load config: %s\n", err.Error())
 		os.Exit(1)
@@ -34,11 +34,11 @@ func init() {
 
 func main() {
 	dbConn, err := connectToDatabase(
-		viper.GetString(`database.host`),
-		viper.GetString(`database.port`),
-		viper.GetString(`database.user`),
-		viper.GetString(`database.pass`),
-		viper.GetString(`database.name`),
+		os.Getenv("DB_HOST"),
+		os.Getenv("DB_PORT"),
+		os.Getenv("DB_USER"),
+		os.Getenv("DB_PASSWORD"),
+		os.Getenv("DB_DATABASE"),
 	)
 	if err != nil {
 		fmt.Printf("Failed to connect to database: %s\n", err.Error())
@@ -59,18 +59,24 @@ func main() {
 	m := model.NewPostgresModelRepository(dbConn)
 
 	modelFileStorage, err := connectToFileStorage(
-		viper.GetString(`filestore.host`),
-		viper.GetString(`filestore.region`),
-		viper.GetString(`filestore.access`),
-		viper.GetString(`filestore.secret`),
-		viper.GetString(`model_bucket`),
+		os.Getenv("FS_HOST"),
+		os.Getenv("FS_REGION"),
+		os.Getenv("FS_ACCESS_KEY"),
+		os.Getenv("FS_SECRET_KEY"),
+		os.Getenv("MODEL_BUCKET"),
 	)
 	if err != nil {
 		fmt.Printf("Failed to connect to file storage: %s\n", err.Error())
 		os.Exit(1)
 	}
 
-	timeoutContext := time.Duration(viper.GetInt("context.timeout")) * time.Second
+	timeoutSeconds, err := strconv.Atoi(os.Getenv("GENERIC_TIMEOUT"))
+	if err != nil {
+		fmt.Printf("Failed to parse timeout value: %s\n", err.Error())
+		os.Exit(1)
+
+	}
+	timeoutContext := time.Duration(timeoutSeconds) * time.Second
 	s := model.NewModelService(m, modelFileStorage, timeoutContext)
 	model.NewModelHandler(e, s)
 
@@ -79,7 +85,7 @@ func main() {
 	authService := auth.NewAuthService(userRepo, timeoutContext)
 	auth.NewAuthHandler(e, authService)
 
-	log.Fatal(e.Start(viper.GetString("server.address")))
+	log.Fatal(e.Start(":" + os.Getenv("PORT")))
 }
 
 func connectToDatabase(dbHost, dbPort, dbUser, dbPass, dbName string) (*sql.DB, error) {
