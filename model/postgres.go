@@ -99,7 +99,7 @@ func (p *postgresModelRepository) GetByName(ctx context.Context, name string) (r
 }
 
 func (p *postgresModelRepository) Store(ctx context.Context, m *domain.Model) (err error) {
-	query := `INSERT INTO models (name, updated_at, created_at) VALUES ($1, NOW(), NOW()) RETURNING id`
+	query := `INSERT INTO models (name, user_id, updated_at, created_at) VALUES ($1, $2, NOW(), NOW()) RETURNING id`
 	stmt, err := p.Conn.PrepareContext(ctx, query)
 	if err != nil {
 		fmt.Printf("%s\n", err.Error())
@@ -107,7 +107,7 @@ func (p *postgresModelRepository) Store(ctx context.Context, m *domain.Model) (e
 	}
 
 	var ID int64
-	err = stmt.QueryRowContext(ctx, m.Name).Scan(&ID)
+	err = stmt.QueryRowContext(ctx, m.Name, m.UserID).Scan(&ID)
 	if err != nil {
 		return
 	}

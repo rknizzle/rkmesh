@@ -4,6 +4,7 @@ import (
 	"net/http"
 	"strconv"
 
+	"github.com/dgrijalva/jwt-go"
 	"github.com/labstack/echo/v4"
 	"github.com/sirupsen/logrus"
 	validator "gopkg.in/go-playground/validator.v9"
@@ -70,8 +71,9 @@ func isRequestValid(m *domain.Model) (bool, error) {
 	return true, nil
 }
 
-// Store will store the model by given request body
 func (m *ModelHandler) Store(c echo.Context) (err error) {
+	userID := getUserIDFromRequest(c)
+
 	file, err := c.FormFile("file")
 	if err != nil {
 		return c.JSON(http.StatusBadRequest, responseError{Message: err.Error()})
@@ -84,11 +86,14 @@ func (m *ModelHandler) Store(c echo.Context) (err error) {
 	defer src.Close()
 
 	model := &domain.Model{}
+
 	ctx := c.Request().Context()
-	err = m.Service.Store(ctx, model, src, file.Filename)
+	err = m.Service.Store(ctx, model, src, file.Filename, userID)
 	if err != nil {
 		return c.JSON(getStatusCode(err), responseError{Message: err.Error()})
 	}
+
+	// TODO: only return the values that I want returned to the user
 
 	return c.JSON(http.StatusCreated, model)
 }
@@ -127,4 +132,10 @@ func getStatusCode(err error) int {
 	default:
 		return http.StatusInternalServerError
 	}
+}
+
+func getUserIDFromRequest(c echo.Context) int64 {
+	user := c.Get("user").(*jwt.Token)
+	claims := user.Claims.(jwt.MapClaims)
+	return int64(claims["user_id"].(float64))
 }

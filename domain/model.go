@@ -9,6 +9,7 @@ import (
 type Model struct {
 	ID        int64     `json:"id"`
 	Name      string    `json:"name" validate:"required"`
+	UserID    int64     `json:"user_id"`
 	UpdatedAt time.Time `json:"updated_at"`
 	CreatedAt time.Time `json:"created_at"`
 }
@@ -18,7 +19,7 @@ type ModelService interface {
 	GetAll(ctx context.Context) ([]Model, error)
 	GetByID(ctx context.Context, id int64) (Model, error)
 	GetByName(ctx context.Context, name string) (Model, error)
-	Store(context.Context, *Model, io.Reader, string) error
+	Store(context.Context, *Model, io.Reader, string, int64) error
 	Delete(ctx context.Context, id int64) error
 }
 

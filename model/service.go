@@ -57,7 +57,7 @@ func (m *modelService) GetByName(c context.Context, name string) (res domain.Mod
 	return
 }
 
-func (m *modelService) Store(c context.Context, model *domain.Model, file io.Reader, filename string) (err error) {
+func (m *modelService) Store(c context.Context, model *domain.Model, file io.Reader, filename string, userID int64) (err error) {
 	ctx, cancel := context.WithTimeout(c, m.contextTimeout)
 	defer cancel()
 
@@ -67,7 +67,7 @@ func (m *modelService) Store(c context.Context, model *domain.Model, file io.Rea
 	}
 
 	model.Name = filename
-
+	model.UserID = userID
 	err = m.modelRepo.Store(ctx, model)
 	return
 }
