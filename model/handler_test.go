@@ -22,14 +22,21 @@ import (
 )
 
 func TestHandlerGetAll(t *testing.T) {
-	var mockModel domain.Model
-	err := faker.FakeData(&mockModel)
-	assert.NoError(t, err)
-	mockService := new(mocks.ModelService)
-	mockListModel := make([]domain.Model, 0)
-	mockListModel = append(mockListModel, mockModel)
+	mockModelList := []domain.Model{
+		{
+			ID:     55,
+			Name:   "test.stl",
+			UserID: 1,
+		},
+		{
+			ID:     56,
+			Name:   "test2.stl",
+			UserID: 1,
+		},
+	}
 
-	mockService.On("GetAll", mock.Anything).Return(mockListModel, nil)
+	mockService := new(mocks.ModelService)
+	mockService.On("GetAll", mock.Anything).Return(mockModelList, nil)
 
 	e := echo.New()
 	req, err := http.NewRequest(echo.GET, "/models", nil)
