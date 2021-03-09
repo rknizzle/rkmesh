@@ -36,7 +36,9 @@ func TestHandlerGetAll(t *testing.T) {
 	}
 
 	mockService := new(mocks.ModelService)
-	mockService.On("GetAll", mock.Anything).Return(mockModelList, nil)
+
+	var mockUserID int64 = 1
+	mockService.On("GetAllUserModels", mock.Anything, mockUserID).Return(mockModelList, nil)
 
 	e := echo.New()
 	req, err := http.NewRequest(echo.GET, "/models", nil)
@@ -44,10 +46,11 @@ func TestHandlerGetAll(t *testing.T) {
 
 	rec := httptest.NewRecorder()
 	c := e.NewContext(req, rec)
+	c.Set("user", mockTokenWithUserID(mockUserID))
+
 	handler := model.ModelHandler{
 		Service: mockService,
 	}
-
 	err = handler.GetAll(c)
 	require.NoError(t, err)
 
@@ -57,7 +60,9 @@ func TestHandlerGetAll(t *testing.T) {
 
 func TestHandlerGetAllError(t *testing.T) {
 	mockService := new(mocks.ModelService)
-	mockService.On("GetAll", mock.Anything).Return(nil, domain.ErrInternalServerError)
+
+	var mockUserID int64 = 1
+	mockService.On("GetAllUserModels", mock.Anything, mockUserID).Return(nil, domain.ErrInternalServerError)
 
 	e := echo.New()
 	req, err := http.NewRequest(echo.GET, "/models", nil)
@@ -65,6 +70,8 @@ func TestHandlerGetAllError(t *testing.T) {
 
 	rec := httptest.NewRecorder()
 	c := e.NewContext(req, rec)
+	c.Set("user", mockTokenWithUserID(mockUserID))
+
 	handler := model.ModelHandler{
 		Service: mockService,
 	}
