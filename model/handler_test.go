@@ -10,6 +10,7 @@ import (
 	"testing"
 
 	"github.com/bxcodec/faker"
+	"github.com/dgrijalva/jwt-go"
 	"github.com/labstack/echo/v4"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/mock"
@@ -105,7 +106,9 @@ func TestHandlerStore(t *testing.T) {
 
 	mockService := new(mocks.ModelService)
 
-	mockService.On("Store", mock.Anything, mock.AnythingOfType("*domain.Model"), mock.Anything, "test.stl").Return(nil)
+	var mockUserID int64 = 1
+
+	mockService.On("Store", mock.Anything, mock.AnythingOfType("*domain.Model"), mock.Anything, "test.stl", mockUserID).Return(nil)
 
 	e := echo.New()
 	formData, multipartBoundary, err := mockFormData()
@@ -117,6 +120,9 @@ func TestHandlerStore(t *testing.T) {
 
 	rec := httptest.NewRecorder()
 	c := e.NewContext(req, rec)
+
+	// mock the request to have a JWT token containing a users ID
+	c.Set("user", mockTokenWithUserID(mockUserID))
 	c.SetPath("/models")
 
 	handler := model.ModelHandler{
@@ -174,4 +180,20 @@ func mockFormData() (*bytes.Buffer, string, error) {
 	}
 
 	return b, writer.FormDataContentType(), nil
+}
+
+func mockTokenWithUserID(mockUserID int64) *jwt.Token {
+
+	// NOTE: for some reason Echo's JWT middleware has the user_id as a float64 value so im mocking
+	// here to have a float64 user_id value to match the input that Echo will give me
+	mockUserIDAsFloat64 := float64(mockUserID)
+
+	// mock the JWT token to be from a user with an ID of '1'
+	mockToken := &jwt.Token{
+		Claims: jwt.MapClaims{
+			"user_id": mockUserIDAsFloat64,
+		},
+	}
+
+	return mockToken
 }

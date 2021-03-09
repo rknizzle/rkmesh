@@ -98,7 +98,7 @@ func TestServiceStore(t *testing.T) {
 
 		s := model.NewModelService(mockModelRepo, mockFilestore, time.Second*2)
 
-		err := s.Store(context.TODO(), &tempMockModel, strings.NewReader("test"), "test.stl")
+		err := s.Store(context.TODO(), &tempMockModel, strings.NewReader("test"), "test.stl", 1)
 
 		assert.NoError(t, err)
 		assert.Equal(t, mockModel.Name, tempMockModel.Name)

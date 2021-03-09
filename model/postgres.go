@@ -38,10 +38,13 @@ func (p *postgresModelRepository) fetch(ctx context.Context, query string, args 
 	for rows.Next() {
 		t := domain.Model{}
 		err = rows.Scan(
+			// NOTE: these fields need to go in a specific order based on the order of the columns
+			// in the SQL table
 			&t.ID,
 			&t.Name,
 			&t.UpdatedAt,
 			&t.CreatedAt,
+			&t.UserID,
 		)
 
 		if err != nil {
@@ -102,7 +105,6 @@ func (p *postgresModelRepository) Store(ctx context.Context, m *domain.Model) (e
 	query := `INSERT INTO models (name, user_id, updated_at, created_at) VALUES ($1, $2, NOW(), NOW()) RETURNING id`
 	stmt, err := p.Conn.PrepareContext(ctx, query)
 	if err != nil {
-		fmt.Printf("%s\n", err.Error())
 		return
 	}
 

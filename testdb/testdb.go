@@ -59,25 +59,28 @@ func (t *TestDB) Truncate() error {
 func (t *TestDB) SeedModels() ([]domain.Model, error) {
 	models := []domain.Model{
 		{
-			Name: "test.stl",
+			Name:   "test.stl",
+			UserID: 1,
 		},
 		{
-			Name: "test2.stl",
+			Name:   "test2.stl",
+			UserID: 1,
 		},
 		{
-			Name: "test3.stl",
+			Name:   "test3.stl",
+			UserID: 1,
 		},
 	}
 
 	for _, m := range models {
-		query := `INSERT INTO models (name, updated_at, created_at) VALUES ($1, NOW(), NOW()) RETURNING id`
+		query := `INSERT INTO models (name, user_id, updated_at, created_at) VALUES ($1, $2, NOW(), NOW()) RETURNING id`
 		stmt, err := t.Conn.Prepare(query)
 		if err != nil {
 			return nil, err
 		}
 
 		var ID int64
-		err = stmt.QueryRow(m.Name).Scan(&ID)
+		err = stmt.QueryRow(m.Name, m.UserID).Scan(&ID)
 		if err != nil {
 			return nil, err
 		}
