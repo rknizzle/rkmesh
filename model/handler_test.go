@@ -90,8 +90,9 @@ func TestHandlerGetByID(t *testing.T) {
 	mockService := new(mocks.ModelService)
 
 	num := int(mockModel.ID)
+	var mockUserID int64 = 1
 
-	mockService.On("GetByID", mock.Anything, int64(num)).Return(mockModel, nil)
+	mockService.On("GetByID", mock.Anything, int64(num), mockUserID).Return(mockModel, nil)
 
 	e := echo.New()
 	req, err := http.NewRequest(echo.GET, "/models/"+strconv.Itoa(num), nil)
@@ -102,6 +103,8 @@ func TestHandlerGetByID(t *testing.T) {
 	c.SetPath("model/:id")
 	c.SetParamNames("id")
 	c.SetParamValues(strconv.Itoa(num))
+	c.Set("user", mockTokenWithUserID(mockUserID))
+
 	handler := model.ModelHandler{
 		Service: mockService,
 	}
@@ -155,10 +158,11 @@ func TestHandlerDelete(t *testing.T) {
 	assert.NoError(t, err)
 
 	mockService := new(mocks.ModelService)
+	var mockUserID int64 = 1
 
 	num := int(mockModel.ID)
 
-	mockService.On("Delete", mock.Anything, int64(num)).Return(nil)
+	mockService.On("Delete", mock.Anything, int64(num), mockUserID).Return(nil)
 
 	e := echo.New()
 	req, err := http.NewRequest(echo.DELETE, "/models/"+strconv.Itoa(num), strings.NewReader(""))
@@ -169,6 +173,8 @@ func TestHandlerDelete(t *testing.T) {
 	c.SetPath("models/:id")
 	c.SetParamNames("id")
 	c.SetParamValues(strconv.Itoa(num))
+	c.Set("user", mockTokenWithUserID(mockUserID))
+
 	handler := model.ModelHandler{
 		Service: mockService,
 	}

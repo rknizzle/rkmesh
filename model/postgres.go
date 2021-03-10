@@ -68,10 +68,10 @@ func (p *postgresModelRepository) GetAllUserModels(ctx context.Context, userID i
 	return
 }
 
-func (p *postgresModelRepository) GetByID(ctx context.Context, id int64) (res domain.Model, err error) {
-	query := `SELECT * FROM models WHERE id = $1`
+func (p *postgresModelRepository) GetByID(ctx context.Context, id int64, userID int64) (res domain.Model, err error) {
+	query := `SELECT * FROM models WHERE id = $1 AND user_id = $2`
 
-	list, err := p.fetch(ctx, query, id)
+	list, err := p.fetch(ctx, query, id, userID)
 	if err != nil {
 		return domain.Model{}, err
 	}

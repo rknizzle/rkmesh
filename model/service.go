@@ -34,11 +34,11 @@ func (m *modelService) GetAllUserModels(c context.Context, userID int64) (res []
 	return
 }
 
-func (m *modelService) GetByID(c context.Context, id int64) (res domain.Model, err error) {
+func (m *modelService) GetByID(c context.Context, id int64, userID int64) (res domain.Model, err error) {
 	ctx, cancel := context.WithTimeout(c, m.contextTimeout)
 	defer cancel()
 
-	res, err = m.modelRepo.GetByID(ctx, id)
+	res, err = m.modelRepo.GetByID(ctx, id, userID)
 	if err != nil {
 		return
 	}
@@ -72,10 +72,10 @@ func (m *modelService) Store(c context.Context, model *domain.Model, file io.Rea
 	return
 }
 
-func (m *modelService) Delete(c context.Context, id int64) (err error) {
+func (m *modelService) Delete(c context.Context, id int64, userID int64) (err error) {
 	ctx, cancel := context.WithTimeout(c, m.contextTimeout)
 	defer cancel()
-	existedModel, err := m.modelRepo.GetByID(ctx, id)
+	existedModel, err := m.modelRepo.GetByID(ctx, id, userID)
 	if err != nil {
 		return err
 	}

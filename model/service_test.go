@@ -53,15 +53,17 @@ func TestServiceGetByID(t *testing.T) {
 	mockModelRepo := new(mocks.ModelRepository)
 	mockFilestore := new(mocks.Filestore)
 	mockModel := domain.Model{
-		ID:   1,
-		Name: "test.stl",
+		ID:     1,
+		Name:   "test.stl",
+		UserID: 1,
 	}
+	var mockUserID int64 = 1
 
 	t.Run("success", func(t *testing.T) {
-		mockModelRepo.On("GetByID", mock.Anything, mock.AnythingOfType("int64")).Return(mockModel, nil).Once()
+		mockModelRepo.On("GetByID", mock.Anything, int64(1), mockUserID).Return(mockModel, nil).Once()
 		s := model.NewModelService(mockModelRepo, mockFilestore, time.Second*2)
 
-		m, err := s.GetByID(context.TODO(), mockModel.ID)
+		m, err := s.GetByID(context.TODO(), mockModel.ID, mockUserID)
 
 		assert.NoError(t, err)
 		assert.NotNil(t, m)
@@ -69,11 +71,11 @@ func TestServiceGetByID(t *testing.T) {
 		mockModelRepo.AssertExpectations(t)
 	})
 	t.Run("error-failed", func(t *testing.T) {
-		mockModelRepo.On("GetByID", mock.Anything, mock.AnythingOfType("int64")).Return(domain.Model{}, errors.New("Unexpected")).Once()
+		mockModelRepo.On("GetByID", mock.Anything, int64(1), mockUserID).Return(domain.Model{}, errors.New("Unexpected")).Once()
 
 		s := model.NewModelService(mockModelRepo, mockFilestore, time.Second*2)
 
-		m, err := s.GetByID(context.TODO(), mockModel.ID)
+		m, err := s.GetByID(context.TODO(), mockModel.ID, mockUserID)
 
 		assert.Error(t, err)
 		assert.Equal(t, domain.Model{}, m)
@@ -110,36 +112,37 @@ func TestServiceStore(t *testing.T) {
 func TestServiceDelete(t *testing.T) {
 	mockModelRepo := new(mocks.ModelRepository)
 	mockFilestore := new(mocks.Filestore)
-	mockModel := domain.Model{Name: "test.stl"}
+	var mockUserID int64 = 1
+	mockModel := domain.Model{Name: "test.stl", UserID: mockUserID}
 
 	t.Run("success", func(t *testing.T) {
-		mockModelRepo.On("GetByID", mock.Anything, mock.AnythingOfType("int64")).Return(mockModel, nil).Once()
+		mockModelRepo.On("GetByID", mock.Anything, mock.AnythingOfType("int64"), mockUserID).Return(mockModel, nil).Once()
 
 		mockModelRepo.On("Delete", mock.Anything, mock.AnythingOfType("int64")).Return(nil).Once()
 
 		s := model.NewModelService(mockModelRepo, mockFilestore, time.Second*2)
 
-		err := s.Delete(context.TODO(), mockModel.ID)
+		err := s.Delete(context.TODO(), mockModel.ID, mockUserID)
 
 		assert.NoError(t, err)
 		mockModelRepo.AssertExpectations(t)
 	})
 	t.Run("model-does-not-exist", func(t *testing.T) {
-		mockModelRepo.On("GetByID", mock.Anything, mock.AnythingOfType("int64")).Return(domain.Model{}, nil).Once()
+		mockModelRepo.On("GetByID", mock.Anything, mock.AnythingOfType("int64"), mockUserID).Return(domain.Model{}, nil).Once()
 
 		s := model.NewModelService(mockModelRepo, mockFilestore, time.Second*2)
 
-		err := s.Delete(context.TODO(), mockModel.ID)
+		err := s.Delete(context.TODO(), mockModel.ID, mockUserID)
 
 		assert.Error(t, err)
 		mockModelRepo.AssertExpectations(t)
 	})
 	t.Run("error-happens-in-db", func(t *testing.T) {
-		mockModelRepo.On("GetByID", mock.Anything, mock.AnythingOfType("int64")).Return(domain.Model{}, errors.New("Unexpected Error")).Once()
+		mockModelRepo.On("GetByID", mock.Anything, mock.AnythingOfType("int64"), mockUserID).Return(domain.Model{}, errors.New("Unexpected Error")).Once()
 
 		s := model.NewModelService(mockModelRepo, mockFilestore, time.Second*2)
 
-		err := s.Delete(context.TODO(), mockModel.ID)
+		err := s.Delete(context.TODO(), mockModel.ID, mockUserID)
 
 		assert.Error(t, err)
 		mockModelRepo.AssertExpectations(t)

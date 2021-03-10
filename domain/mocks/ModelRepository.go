@@ -51,20 +51,20 @@ func (_m *ModelRepository) GetAllUserModels(ctx context.Context, userID int64) (
 	return r0, r1
 }
 
-// GetByID provides a mock function with given fields: ctx, id
-func (_m *ModelRepository) GetByID(ctx context.Context, id int64) (domain.Model, error) {
-	ret := _m.Called(ctx, id)
+// GetByID provides a mock function with given fields: ctx, id, userID
+func (_m *ModelRepository) GetByID(ctx context.Context, id int64, userID int64) (domain.Model, error) {
+	ret := _m.Called(ctx, id, userID)
 
 	var r0 domain.Model
-	if rf, ok := ret.Get(0).(func(context.Context, int64) domain.Model); ok {
-		r0 = rf(ctx, id)
+	if rf, ok := ret.Get(0).(func(context.Context, int64, int64) domain.Model); ok {
+		r0 = rf(ctx, id, userID)
 	} else {
 		r0 = ret.Get(0).(domain.Model)
 	}
 
 	var r1 error
-	if rf, ok := ret.Get(1).(func(context.Context, int64) error); ok {
-		r1 = rf(ctx, id)
+	if rf, ok := ret.Get(1).(func(context.Context, int64, int64) error); ok {
+		r1 = rf(ctx, id, userID)
 	} else {
 		r1 = ret.Error(1)
 	}

@@ -54,8 +54,9 @@ func (m *ModelHandler) GetByID(c echo.Context) error {
 	}
 
 	ctx := c.Request().Context()
+	userID := getUserIDFromRequest(c)
 
-	model, err := m.Service.GetByID(ctx, id)
+	model, err := m.Service.GetByID(ctx, id, userID)
 	if err != nil {
 		return c.JSON(getStatusCode(err), responseError{Message: err.Error()})
 	}
@@ -108,8 +109,9 @@ func (m *ModelHandler) Delete(c echo.Context) error {
 
 	id := int64(idP)
 	ctx := c.Request().Context()
+	userID := getUserIDFromRequest(c)
 
-	err = m.Service.Delete(ctx, id)
+	err = m.Service.Delete(ctx, id, userID)
 	if err != nil {
 		return c.JSON(getStatusCode(err), responseError{Message: err.Error()})
 	}
