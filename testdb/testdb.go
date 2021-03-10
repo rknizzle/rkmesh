@@ -40,7 +40,7 @@ func Open() (TestDB, *sql.DB, error) {
 
 // Truncate removes all seed data from the test database
 func (t *TestDB) Truncate() error {
-	query := "TRUNCATE TABLE models;"
+	query := "TRUNCATE TABLE models, users;"
 
 	stmt, err := t.Conn.PrepareContext(context.TODO(), query)
 	if err != nil {
@@ -57,22 +57,9 @@ func (t *TestDB) Truncate() error {
 
 // SeedModels places test data into the test database for integration tests
 func (t *TestDB) SeedModels() ([]domain.Model, error) {
-	models := []domain.Model{
-		{
-			Name:   "test.stl",
-			UserID: 1,
-		},
-		{
-			Name:   "test2.stl",
-			UserID: 1,
-		},
-		{
-			Name:   "test3.stl",
-			UserID: 1,
-		},
-	}
+	testModels := testModels()
 
-	for _, m := range models {
+	for _, m := range testModels {
 		query := `INSERT INTO models (name, user_id, updated_at, created_at) VALUES ($1, $2, NOW(), NOW()) RETURNING id`
 		stmt, err := t.Conn.Prepare(query)
 		if err != nil {
@@ -88,5 +75,62 @@ func (t *TestDB) SeedModels() ([]domain.Model, error) {
 		m.ID = ID
 	}
 
-	return models, nil
+	return testModels, nil
+}
+
+// SeedUsers places test users into the test database for integration tests
+func (t *TestDB) SeedUsers() ([]domain.User, error) {
+	testUsers := testUsers()
+
+	for _, u := range testUsers {
+		query := `INSERT INTO users (id, email, password, updated_at, created_at) VALUES ($1, $2, $3, NOW(), NOW()) RETURNING id`
+		stmt, err := t.Conn.Prepare(query)
+		if err != nil {
+			return nil, err
+		}
+
+		var ID int64
+		err = stmt.QueryRow(u.ID, u.Email, u.Password).Scan(&ID)
+		if err != nil {
+			return nil, err
+		}
+
+		u.ID = ID
+	}
+
+	return testUsers, nil
+}
+
+func testModels() []domain.Model {
+	models := []domain.Model{
+		{
+			Name:   "test.stl",
+			UserID: 1,
+		},
+		{
+			Name:   "test2.stl",
+			UserID: 1,
+		},
+		{
+			Name:   "test3.stl",
+			UserID: 2,
+		},
+	}
+	return models
+}
+
+func testUsers() []domain.User {
+	users := []domain.User{
+		{
+			ID:       1,
+			Email:    "example@gmail.com",
+			Password: "password",
+		},
+		{
+			ID:       2,
+			Email:    "example2@gmail.com",
+			Password: "password",
+		},
+	}
+	return users
 }
