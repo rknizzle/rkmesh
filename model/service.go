@@ -22,11 +22,11 @@ func NewModelService(m domain.ModelRepository, s domain.Filestore, timeout time.
 	}
 }
 
-func (m *modelService) GetAll(c context.Context) (res []domain.Model, err error) {
+func (m *modelService) GetAllUserModels(c context.Context, userID int64) (res []domain.Model, err error) {
 	ctx, cancel := context.WithTimeout(c, m.contextTimeout)
 	defer cancel()
 
-	res, err = m.modelRepo.GetAll(ctx)
+	res, err = m.modelRepo.GetAllUserModels(ctx, userID)
 	if err != nil {
 		return nil, err
 	}

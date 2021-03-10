@@ -35,8 +35,9 @@ func NewModelHandler(e *echo.Group, s domain.ModelService) {
 
 func (m *ModelHandler) GetAll(c echo.Context) error {
 	ctx := c.Request().Context()
+	userID := getUserIDFromRequest(c)
 
-	mList, err := m.Service.GetAll(ctx)
+	mList, err := m.Service.GetAllUserModels(ctx, userID)
 	if err != nil {
 		return c.JSON(getStatusCode(err), responseError{Message: err.Error()})
 	}

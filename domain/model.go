@@ -16,7 +16,7 @@ type Model struct {
 
 // ModelService represent the models business logic
 type ModelService interface {
-	GetAll(ctx context.Context) ([]Model, error)
+	GetAllUserModels(ctx context.Context, userID int64) ([]Model, error)
 	GetByID(ctx context.Context, id int64) (Model, error)
 	GetByName(ctx context.Context, name string) (Model, error)
 	Store(context.Context, *Model, io.Reader, string, int64) error
@@ -25,7 +25,7 @@ type ModelService interface {
 
 // ModelService represent the models repository contract
 type ModelRepository interface {
-	GetAll(ctx context.Context) (res []Model, err error)
+	GetAllUserModels(ctx context.Context, userID int64) ([]Model, error)
 	GetByID(ctx context.Context, id int64) (Model, error)
 	GetByName(ctx context.Context, name string) (Model, error)
 	Store(ctx context.Context, m *Model) error

@@ -22,13 +22,14 @@ func TestServiceGetAll(t *testing.T) {
 
 	mockListModel := make([]domain.Model, 0)
 	mockListModel = append(mockListModel, mockModel)
+	var mockUserID int64 = 1
 
 	t.Run("success", func(t *testing.T) {
-		mockModelRepo.On("GetAll", mock.Anything).Return(mockListModel, nil).Once()
+		mockModelRepo.On("GetAllUserModels", mock.Anything, mockUserID).Return(mockListModel, nil).Once()
 
 		u := model.NewModelService(mockModelRepo, mockFilestore, time.Second*2)
 
-		list, err := u.GetAll(context.TODO())
+		list, err := u.GetAllUserModels(context.TODO(), mockUserID)
 		assert.NoError(t, err)
 		assert.Len(t, list, len(mockListModel))
 
@@ -36,10 +37,10 @@ func TestServiceGetAll(t *testing.T) {
 	})
 
 	t.Run("error-failed", func(t *testing.T) {
-		mockModelRepo.On("GetAll", mock.Anything).Return(nil, errors.New("Unexpexted Error")).Once()
+		mockModelRepo.On("GetAllUserModels", mock.Anything, mockUserID).Return(nil, errors.New("Unexpexted Error")).Once()
 
 		s := model.NewModelService(mockModelRepo, mockFilestore, time.Second*2)
-		list, err := s.GetAll(context.TODO())
+		list, err := s.GetAllUserModels(context.TODO(), mockUserID)
 
 		assert.Error(t, err)
 		assert.Len(t, list, 0)

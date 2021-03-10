@@ -57,10 +57,10 @@ func (p *postgresModelRepository) fetch(ctx context.Context, query string, args 
 	return result, nil
 }
 
-func (p *postgresModelRepository) GetAll(ctx context.Context) (res []domain.Model, err error) {
-	query := `SELECT * FROM models ORDER BY created_at`
+func (p *postgresModelRepository) GetAllUserModels(ctx context.Context, userID int64) (res []domain.Model, err error) {
+	query := `SELECT * FROM models WHERE user_id = $1 ORDER BY created_at`
 
-	res, err = p.fetch(ctx, query)
+	res, err = p.fetch(ctx, query, userID)
 	if err != nil {
 		return nil, err
 	}

@@ -1,12 +1,14 @@
 package integration
 
 import (
+	"encoding/json"
 	"net/http"
 	"net/http/httptest"
 	"testing"
 
 	"github.com/dgrijalva/jwt-go"
 	"github.com/labstack/echo/v4"
+	"github.com/rknizzle/rkmesh/domain"
 	"github.com/rknizzle/rkmesh/model"
 	"github.com/rknizzle/rkmesh/testdb"
 	"github.com/stretchr/testify/assert"
@@ -27,7 +29,11 @@ var tdb testdb.TestDB
 // GET /models
 func TestGetAll(t *testing.T) {
 	tdb.Truncate()
-	_, err := tdb.SeedModels()
+
+	_, err := tdb.SeedUsers()
+	assert.NoError(t, err)
+
+	_, err = tdb.SeedModels()
 	assert.NoError(t, err)
 
 	e := echo.New()
@@ -45,6 +51,15 @@ func TestGetAll(t *testing.T) {
 	require.NoError(t, err)
 
 	assert.Equal(t, http.StatusOK, rec.Code)
+
+	// get all the models from the response
+	var responseModels []domain.Model
+	json.Unmarshal(rec.Body.Bytes(), &responseModels)
+
+	// verify that all the models belong to the user with id '1'
+	for _, m := range responseModels {
+		assert.Equal(t, int64(1), m.UserID)
+	}
 }
 
 func mockTokenWithUserID(mockUserID int64) *jwt.Token {
