@@ -19,6 +19,7 @@ type Model struct {
 type ModelService interface {
 	GetAllUserModels(ctx context.Context, userID int64) ([]Model, error)
 	GetByID(ctx context.Context, id int64, userID int64) (Model, error)
+	GetDirectDownloadURL(ctx context.Context, id int64, userID int64) (string, error)
 	GetByName(ctx context.Context, name string) (Model, error)
 	Store(context.Context, *Model, io.Reader, string, int64) error
 	Delete(ctx context.Context, id int64, userID int64) error

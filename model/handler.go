@@ -30,6 +30,7 @@ func NewModelHandler(e *echo.Group, s domain.ModelService) {
 	e.GET("", handler.GetAll)
 	e.POST("", handler.Store)
 	e.GET("/:id", handler.GetByID)
+	e.GET("/:id/content", handler.GetFileContent)
 	e.DELETE("/:id", handler.Delete)
 }
 
@@ -62,6 +63,24 @@ func (m *ModelHandler) GetByID(c echo.Context) error {
 	}
 
 	return c.JSON(http.StatusOK, model)
+}
+
+func (m *ModelHandler) GetFileContent(c echo.Context) error {
+	// convert the url param 'id' from a string to int64
+	id, err := strconv.ParseInt(c.Param("id"), 10, 64)
+	if err != nil {
+		return c.JSON(http.StatusNotFound, domain.ErrNotFound.Error())
+	}
+
+	ctx := c.Request().Context()
+	userID := getUserIDFromRequest(c)
+
+	downloadURL, err := m.Service.GetDirectDownloadURL(ctx, id, userID)
+	if err != nil {
+		return c.JSON(getStatusCode(err), responseError{Message: err.Error()})
+	}
+
+	return c.Redirect(http.StatusFound, downloadURL)
 }
 
 func isRequestValid(m *domain.Model) (bool, error) {

@@ -46,6 +46,23 @@ func (m *modelService) GetByID(c context.Context, id int64, userID int64) (res d
 	return
 }
 
+func (m *modelService) GetDirectDownloadURL(c context.Context, id int64, userID int64) (string, error) {
+	ctx, cancel := context.WithTimeout(c, m.contextTimeout)
+	defer cancel()
+
+	model, err := m.modelRepo.GetByID(ctx, id, userID)
+	if err != nil {
+		return "", err
+	}
+
+	url, err := m.filestore.GetDirectDownloadURL(model.DownloadID)
+	if err != nil {
+		return "", err
+	}
+
+	return url, nil
+}
+
 func (m *modelService) GetByName(c context.Context, name string) (res domain.Model, err error) {
 	ctx, cancel := context.WithTimeout(c, m.contextTimeout)
 	defer cancel()
