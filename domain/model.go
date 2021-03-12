@@ -7,11 +7,12 @@ import (
 )
 
 type Model struct {
-	ID        int64     `json:"id"`
-	Name      string    `json:"name" validate:"required"`
-	UserID    int64     `json:"user_id"`
-	UpdatedAt time.Time `json:"updated_at"`
-	CreatedAt time.Time `json:"created_at"`
+	ID         int64     `json:"id"`
+	Name       string    `json:"name" validate:"required"`
+	UserID     int64     `json:"user_id"`
+	DownloadID string    `json:"download_id"`
+	UpdatedAt  time.Time `json:"updated_at"`
+	CreatedAt  time.Time `json:"created_at"`
 }
 
 // ModelService represent the models business logic

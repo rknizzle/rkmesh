@@ -1,6 +1,7 @@
 CREATE TABLE IF NOT EXISTS models (
   id SERIAL PRIMARY KEY,
   name TEXT NOT NULL,
+  download_id TEXT,
   updated_at TIMESTAMP DEFAULT NULL,
   created_at TIMESTAMP DEFAULT NULL
 );

@@ -24,14 +24,15 @@ func NewS3Filestore(session *session.Session, bucket string) domain.Filestore {
 func (s *s3Filestore) Upload(ctx context.Context, file io.Reader, filename string) (string, error) {
 	u := uuid.NewV4()
 
-	up, err := s.uploader.UploadWithContext(ctx, &s3manager.UploadInput{
+	key := filename + "-" + u.String()
+	_, err := s.uploader.UploadWithContext(ctx, &s3manager.UploadInput{
 		Bucket: aws.String(s.bucket),
 		ACL:    aws.String("public-read"),
-		Key:    aws.String(filename + "-" + u.String()),
+		Key:    aws.String(key),
 		Body:   file,
 	})
 	if err != nil {
 		return "", err
 	}
-	return up.Location, nil
+	return key, nil
 }

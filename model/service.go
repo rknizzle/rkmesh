@@ -61,10 +61,11 @@ func (m *modelService) Store(c context.Context, model *domain.Model, file io.Rea
 	ctx, cancel := context.WithTimeout(c, m.contextTimeout)
 	defer cancel()
 
-	_, err = m.filestore.Upload(ctx, file, filename)
+	downloadID, err := m.filestore.Upload(ctx, file, filename)
 	if err != nil {
 		return err
 	}
+	model.DownloadID = downloadID
 
 	model.Name = filename
 	model.UserID = userID

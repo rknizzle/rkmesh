@@ -42,6 +42,7 @@ func (p *postgresModelRepository) fetch(ctx context.Context, query string, args 
 			// in the SQL table
 			&t.ID,
 			&t.Name,
+			&t.DownloadID,
 			&t.UpdatedAt,
 			&t.CreatedAt,
 			&t.UserID,
@@ -102,14 +103,14 @@ func (p *postgresModelRepository) GetByName(ctx context.Context, name string) (r
 }
 
 func (p *postgresModelRepository) Store(ctx context.Context, m *domain.Model) (err error) {
-	query := `INSERT INTO models (name, user_id, updated_at, created_at) VALUES ($1, $2, NOW(), NOW()) RETURNING id`
+	query := `INSERT INTO models (name, user_id, download_id, updated_at, created_at) VALUES ($1, $2, $3, NOW(), NOW()) RETURNING id`
 	stmt, err := p.Conn.PrepareContext(ctx, query)
 	if err != nil {
 		return
 	}
 
 	var ID int64
-	err = stmt.QueryRowContext(ctx, m.Name, m.UserID).Scan(&ID)
+	err = stmt.QueryRowContext(ctx, m.Name, m.UserID, m.DownloadID).Scan(&ID)
 	if err != nil {
 		return
 	}
