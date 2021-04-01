@@ -60,14 +60,14 @@ func (t *TestDB) SeedModels() ([]domain.Model, error) {
 	testModels := testModels()
 
 	for _, m := range testModels {
-		query := `INSERT INTO models (name, user_id, updated_at, created_at) VALUES ($1, $2, NOW(), NOW()) RETURNING id`
+		query := `INSERT INTO models (name, user_id, download_id, updated_at, created_at) VALUES ($1, $2, $3, NOW(), NOW()) RETURNING id`
 		stmt, err := t.Conn.Prepare(query)
 		if err != nil {
 			return nil, err
 		}
 
 		var ID int64
-		err = stmt.QueryRow(m.Name, m.UserID).Scan(&ID)
+		err = stmt.QueryRow(m.Name, m.UserID, m.DownloadID).Scan(&ID)
 		if err != nil {
 			return nil, err
 		}
@@ -104,16 +104,19 @@ func (t *TestDB) SeedUsers() ([]domain.User, error) {
 func testModels() []domain.Model {
 	models := []domain.Model{
 		{
-			Name:   "test.stl",
-			UserID: 1,
+			Name:       "test.stl",
+			UserID:     1,
+			DownloadID: "xxx",
 		},
 		{
-			Name:   "test2.stl",
-			UserID: 1,
+			Name:       "test2.stl",
+			UserID:     1,
+			DownloadID: "yyy",
 		},
 		{
-			Name:   "test3.stl",
-			UserID: 2,
+			Name:       "test3.stl",
+			UserID:     2,
+			DownloadID: "zzz",
 		},
 	}
 	return models
